@@ -15,34 +15,35 @@
             overflow-x: hidden;
         }
 
-        /* Video Background (Matches main site) */
+        /* Video Background */
         .video-container { position: fixed; inset: 0; z-index: -1; }
         #video-bg { width: 100%; height: 100%; object-fit: cover; filter: brightness(0.3) grayscale(0.5); }
 
+        /* Liquid Glass Buttons */
         .glass-btn {
             background: rgba(255, 255, 255, 0.1);
             backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
             border: 1px solid rgba(255, 255, 255, 0.2);
+            border-top: 1px solid rgba(255, 255, 255, 0.4);
             padding: 12px 28px;
             border-radius: 50px;
             color: white;
             text-decoration: none;
-            transition: 0.4s ease;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             cursor: pointer;
-            display: inline-block;
+            display: inline-flex;
+            align-items: center;
         }
 
-        .glass-btn:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-3px); }
+        .glass-btn:hover { background: rgba(255, 255, 255, 0.25); transform: translateY(-3px) scale(1.05); }
 
         .container {
             display: flex; flex-direction: column; align-items: center;
             padding: 60px 20px; z-index: 1; position: relative;
         }
 
-        .farewell-header {
-            text-align: center; margin-bottom: 50px;
-            animation: fadeIn 1.5s ease;
-        }
+        .farewell-header { text-align: center; margin-bottom: 50px; animation: fadeIn 1.5s ease; }
 
         .memory-card {
             background: rgba(255, 255, 255, 0.05);
@@ -56,17 +57,43 @@
 
         .farewell-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px; width: 100%; margin-top: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px; width: 100%; max-width: 1200px; margin-top: 30px;
         }
 
         .farewell-img {
             width: 100%; aspect-ratio: 1; object-fit: cover;
-            border-radius: 10px; transition: 0.3s;
-            cursor: pointer;
+            border-radius: 15px; transition: 0.3s;
+            cursor: pointer; border: 1px solid rgba(255,255,255,0.1);
         }
 
-        .farewell-img:hover { transform: scale(1.05); filter: sepia(0.5); }
+        .farewell-img:hover { transform: scale(1.02); filter: brightness(1.1); border-color: rgba(255,255,255,0.5); }
+
+        /* --- Liquid Glass Image Viewer Overlay --- */
+        #overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.95);
+            display: none; z-index: 9999; flex-direction: column;
+            justify-content: center; align-items: center;
+        }
+
+        #imgWrapper { 
+            width: 90vw; height: 75vh; 
+            display: flex; justify-content: center; align-items: center;
+            overflow: auto; cursor: grab;
+        }
+
+        #fullImg { 
+            transition: transform 0.2s ease; 
+            max-width: 100%; max-height: 100%; 
+            border-radius: 10px;
+            box-shadow: 0 0 50px rgba(0,0,0,0.5);
+        }
+
+        .viewer-controls {
+            margin-top: 25px; display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+            background: rgba(255,255,255,0.05); padding: 15px 25px; border-radius: 50px;
+            backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);
+        }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
@@ -94,40 +121,42 @@
         <div class="memory-card">
             <h3>A Note from Rudra</h3>
             <p style="margin-top: 20px; line-height: 1.8; opacity: 0.9;">
-                Every ending is just a new beginning in disguise. This gallery is a tribute to the time we spent together and the memories that will remain long after we’ve moved on. Thank you for the memories, the support, and the journey. Until we meet again."
+                Every ending is just a new beginning in disguise. This gallery is a tribute to the time we spent together and the memories that will remain long after we’ve moved on. Thank you for the memories, the support, and the journey. Until we meet again.
             </p>
         </div>
 
         <h2 style="margin-top: 40px; font-weight: 300;">Farewell Gallery</h2>
-        <div class="farewell-grid" id="farewellPhotos">
-            </div>
+        <div class="farewell-grid" id="farewellPhotos"></div>
+    </div>
+
+    <div id="overlay">
+        <div id="imgWrapper">
+            <img src="" id="fullImg">
+        </div>
+        <div class="viewer-controls">
+            <button class="glass-btn" onclick="zoomImg(1.2)">Zoom +</button>
+            <button class="glass-btn" onclick="zoomImg(0.8)">Zoom -</button>
+            <button class="glass-btn" onclick="downloadImg()" style="background: rgba(0, 255, 128, 0.15);">Download</button>
+            <button class="glass-btn" onclick="closeImg()" style="background: rgba(255, 50, 50, 0.15);">Close</button>
+        </div>
     </div>
 
     <footer>Owned and Operated by Rudra</footer>
 
     <script>
-        // CUSTOMIZE YOUR FAREWELL PHOTOS HERE
+        let currentScale = 1;
+
         const farewellImages = [
-            "Z/IMG-20260209-WA0024.jpg",
-            "Z/IMG-20260209-WA0029.jpg",
-            "Z/IMG-20260209-WA0030.jpg",
-            "Z/IMG-20260209-WA0031_1.jpg",
-            "Z/IMG-20260209-WA0036.jpg",
-            "Z/IMG-20260209-WA0047_1.jpg",
-            "Z/IMG-20260209-WA0055.jpg",
-            "Z/IMG-20260209-WA0115.jpg",
-            "Z/IMG-20260209-WA0118.jpg",
-            "Z/IMG-20260209-WA0120.jpg",
-            "Z/IMG-20260209-WA0121.jpg",
-            "Z/IMG-20260209-WA0123_1.jpg",
-            "Z/IMG-20260209-WA0125.jpg",
-            "Z/IMG-20260209-WA0138.jpg",
-            "Z/IMG-20260209-WA0186.jpg",
-            "Z/IMG-20260209-WA0193.jpg",
-            "Z/IMG-20260209-WA0200.jpg",
-            "Z/IMG-20260209-WA0202.jpg",
-            "Z/IMG-20260209-WA0230.jpg",
-            "Z/IMG_20260210_222823.jpg"
+            "Z/IMG-20260209-WA0024.jpg", "Z/IMG-20260209-WA0029.jpg",
+            "Z/IMG-20260209-WA0030.jpg", "Z/IMG-20260209-WA0031_1.jpg",
+            "Z/IMG-20260209-WA0036.jpg", "Z/IMG-20260209-WA0047_1.jpg",
+            "Z/IMG-20260209-WA0055.jpg", "Z/IMG-20260209-WA0115.jpg",
+            "Z/IMG-20260209-WA0118.jpg", "Z/IMG-20260209-WA0120.jpg",
+            "Z/IMG-20260209-WA0121.jpg", "Z/IMG-20260209-WA0123_1.jpg",
+            "Z/IMG-20260209-WA0125.jpg", "Z/IMG-20260209-WA0138.jpg",
+            "Z/IMG-20260209-WA0186.jpg", "Z/IMG-20260209-WA0193.jpg",
+            "Z/IMG-20260209-WA0200.jpg", "Z/IMG-20260209-WA0202.jpg",
+            "Z/IMG-20260209-WA0230.jpg", "Z/IMG_20260210_222823.jpg"
         ];
 
         const container = document.getElementById('farewellPhotos');
@@ -135,9 +164,36 @@
             const img = document.createElement('img');
             img.src = url;
             img.className = 'farewell-img';
+            img.onclick = () => openViewer(url);
             container.appendChild(img);
         });
+
+        function openViewer(src) {
+            const fullImg = document.getElementById('fullImg');
+            fullImg.src = src;
+            currentScale = 1;
+            fullImg.style.transform = `scale(${currentScale})`;
+            document.getElementById('overlay').style.display = 'flex';
+        }
+
+        function zoomImg(factor) {
+            currentScale *= factor;
+            if(currentScale < 0.5) currentScale = 0.5;
+            document.getElementById('fullImg').style.transform = `scale(${currentScale})`;
+        }
+
+        function downloadImg() {
+            const a = document.createElement('a');
+            a.href = document.getElementById('fullImg').src;
+            a.download = 'Farewell_Memory.jpg';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+        }
+
+        function closeImg() {
+            document.getElementById('overlay').style.display = 'none';
+        }
     </script>
 </body>
 </html>
-

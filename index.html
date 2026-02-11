@@ -1,1 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Rudra's Gallery</title>
+    <style>
+        :root {
+            --glass: rgba(255, 255, 255, 0.1);
+            --liquid: rgba(255, 255, 255, 0.2);
+        }
+
+        body, html {
+            margin: 0; padding: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(45deg, #0f0c29, #302b63, #24243e);
+            color: white;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- Liquid Glass Buttons --- */
+        .glass-btn {
+            background: var(--glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid rgba(255,255,255,0.1);
+            padding: 20px 40px;
+            border-radius: 15px;
+            color: white;
+            cursor: pointer;
+            transition: 0.4s;
+            font-size: 1.2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+        }
+
+        .glass-btn:hover {
+            background: var(--liquid);
+            transform: translateY(-5px);
+            box-shadow: 0 12px 40px rgba(255,255,255,0.1);
+        }
+
+        /* --- Animations --- */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .view { display: none; padding: 50px 20px; animation: fadeIn 0.6s ease-out; }
+        .view.active { display: flex; flex-direction: column; align-items: center; }
+
+        /* --- Grid Layouts --- */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px; width: 90%; max-width: 1200px;
+        }
+
+        .card {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 15px;
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .gallery-img { width: 100%; border-radius: 10px; cursor: pointer; transition: 0.3s; }
+        .gallery-img:hover { transform: scale(1.05); }
+
+        /* --- Fullscreen Image View --- */
+        #overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.9); display: none;
+            justify-content: center; align-items: center; z-index: 1000;
+        }
+        #overlay img { max-width: 90%; max-height: 90%; border-radius: 10px; }
+
+        footer { margin-top: auto; padding: 20px; font-size: 0.8rem; opacity: 0.7; }
+    </style>
+</head>
+<body>
+
+    <div id="disclaimer" class="view active">
+        <h2>Disclaimer</h2>
+        <p id="custom-disclaimer">Enter your custom message here regarding data usage or privacy.</p>
+        <button class="glass-btn" onclick="nextStep('name-prompt')">I Accept</button>
+    </div>
+
+    <div id="name-prompt" class="view">
+        <h2>Welcome</h2>
+        <input type="text" id="userName" placeholder="Enter your name" style="padding: 10px; border-radius: 5px; border: none;">
+        <br>
+        <button class="glass-btn" onclick="saveName()">Enter Site</button>
+    </div>
+
+    <div id="home" class="view">
+        <h1 id="welcomeMsg"></h1>
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; justify-content: center;">
+            <button class="glass-btn" onclick="showGallery('2024')">2024-25 Gallery</button>
+            <button class="glass-btn" onclick="showGallery('2025')">2025-26 Gallery</button>
+            <button class="glass-btn" onclick="nextStep('contacts')">Individual Contacts</button>
+        </div>
+    </div>
+
+    <div id="gallery" class="view">
+        <h2 id="galleryTitle"></h2>
+        <div class="grid" id="imageContainer">
+            </div>
+        <br>
+        <button class="glass-btn" onclick="nextStep('home')">Back to Home</button>
+    </div>
+
+    <div id="contacts" class="view">
+        <h2>Contact Directory</h2>
+        <div class="grid" id="contactContainer">
+            </div>
+        <br>
+        <button class="glass-btn" onclick="nextStep('home')">Back to Home</button>
+    </div>
+
+    <div id="overlay" onclick="this.style.display='none'"><img src="" id="fullImg"></div>
+
+    <center><footer>Owned and Operated by Rudra</footer></center>
+
+    <script>
+        function nextStep(id) {
+            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        }
+
+        function saveName() {
+            const name = document.getElementById('userName').value;
+            if(name) {
+                document.getElementById('welcomeMsg').innerText = `Hello, ${name}`;
+                nextStep('home');
+            } else { alert("Please enter your name"); }
+        }
+
+        function showGallery(year) {
+            document.getElementById('galleryTitle').innerText = `Gallery ${year}`;
+            const container = document.getElementById('imageContainer');
+            container.innerHTML = ''; // Clear old images
+            
+            // Placeholder images (Replace with your actual URLs)
+            for(let i=1; i<=6; i++) {
+                let img = document.createElement('img');
+                img.src = `https://picsum.photos/seed/${year+i}/400/300`;
+                img.className = 'gallery-img';
+                img.onclick = () => {
+                    document.getElementById('fullImg').src = img.src;
+                    document.getElementById('overlay').style.display = 'flex';
+                };
+                container.appendChild(img);
+            }
+            nextStep('gallery');
+        }
+
+        // Initialize 15 Contacts
+        const contactGrid = document.getElementById('contactContainer');
+        for(let i=1; i<=15; i++) {
+            contactGrid.innerHTML += `
+                <div class="card">
+                    <img src="https://i.pravatar.cc/100?u=${i}" style="border-radius:50%">
+                    <h3>Person ${i}</h3>
+                    <p>Contact: +91 00000 00000</p>
+                    <p>IG: @user_${i}</p>
+                </div>
+            `;
+        }
+    </script>
+</body>
+</html>
 
